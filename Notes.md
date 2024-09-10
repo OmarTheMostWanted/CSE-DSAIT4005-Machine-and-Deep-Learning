@@ -159,3 +159,146 @@ $ \sum_{j=1}^2 \lambda_{j2} P(w_j|x) => \lambda_{12} P(w_1|x) + \lambda_{22} P(w
 and choose the class with the minimum value.
 
 # Lecture 2: Density  based classification
+## Bayes Classifier
+In many cases the posterior is hard to estimate, often a functional (parametric) form is assumed. Using bayes theorem we can rewrite the posterior as:
+$ P(y|x) = \frac{P(x|y)P(y)}{P(x)} $
+
+Where:
+- $ P(y|x) $ is the posterior
+- $ P(x|y) $ is the likelihood or class conditional
+- $ P(y) $ is the  class prior
+- $ P(x) $ is the unconditioned distribution
+    - which can be estimated by the sum of the likelihoods times the priors:
+    - $ P\^(x) = \sum_{i=1}^{C} P\^(x|y_i)P\^(y_i) $
+
+
+## Estimating the class conditional probability
+- The model for the class condtional probability is now the crucial choice.
+
+### Very Common model: Gaussian distribution
+The Gaussian distribution is a continuous probability distribution that is symmetric around its mean, showing that data near the mean are more frequent in occurrence than data far from the mean. The Gaussian distribution is defined by the probability density function:
+
+$ p(x) = \frac{1}{(2\pi)^{p/2} \sqrt{\det(\Sigma)}} \exp\left(-\frac{1}{2} (\mathbf{x} - \boldsymbol{\mu})^\top \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu})\right) $
+
+Where:
+- $ \mu $ is the mean vector
+- $ \Sigma $ is the covariance matrix the elliptical shape of the distribution
+- $ p $ is the number of dimensions
+- $ \det(\Sigma) $ is the determinant of the covariance matrix
+    - The determinant of a matrix is a value that can be computed from its elements. It is a measure of the space spanned by the matrix's columns.
+    - $ det(\Sigma) = \prod_{i=1}^{p} \lambda_i $ where $ \lambda_i $ are the eigenvalues of the covariance matrix
+- $ \exp $ is the exponential function
+
+#### 2D Gaussian distribution
+$$ \mu = \begin{bmatrix} \mu_1 \\ \mu_2 \end{bmatrix} $$
+
+$$ \Sigma = \begin{bmatrix} \sigma_1^2 & \rho \sigma_1 \sigma_2 \\ \rho \sigma_1 \sigma_2 & \sigma_2^2 \end{bmatrix} $$
+
+where:
+- $ \sigma_1^2 $ and $ \sigma_2^2 $ are the variances of the two dimensions
+- $ \rho $ is the correlation coefficient between the two dimensions
+
+$ p(x) = \frac{1}{\sqrt{2\pi det(\Sigma)}} \exp\left(-\frac{1}{2} (\mathbf{x} - \boldsymbol{\mu})^\top \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu})\right) $
+
+
+
+#### Plug-in Gaussian Distribution
+Now we use the Gaussian distribution for each class:
+
+$ p\^(x|y) = \frac{1}{\sqrt{2\pi^p det(\Sigma_y\^)}} \exp\left(-\frac{1}{2} (\mathbf{x} - \boldsymbol{\mu}_y\^)^\top \Sigma_y\^(\mathbf{x} - \boldsymbol{\mu}_y\^)\right) $
+
+We have to estimate the parameters $ \mu_y $ and $ \Sigma_y $ for each class using some training data.
+
+$ \mu = \frac{1}{N} \sum_{i=1}^{N} x_i $
+
+$ \Sigma = \frac{1}{N} \sum_{i=1}^{N} (x_i - \mu) (x_i - \mu)^\top $   <- outer product
+
+#### The Two-Class case
+- Define the discriminant:
+$ f(x) = \log P(y_1|x) - \log P(y_2|x) $ it means that $ f(x) = 0 $ is the decision boundary
+
+- Rewrite the discriminant:
+$ f(x) = x^\top W x + w^\top x + w_0 $
+
+where:
+- W is the matrix of the quadratic terms of the discriminant function
+- w is the vector of the linear terms of the discriminant function
+- w_0 is the bias term
+
+this is called a quadratic discriminant function of x
+
+##### Rewriting the Discriminant Function
+
+1. **Original Discriminant Function**:
+   $$ f(x) = \log p(y_1|x) - \log p(y_2|x) $$
+
+   This function compares the logarithms of the posterior probabilities of the two classes $ ( y_1 ) and ( y_2 ) $. 
+
+2. **Gaussian Assumption**:
+   If we assume that the class-conditional densities $ ( p(x|y_1) ) and ( p(x|y_2) ) $ are Gaussian, we can express these probabilities in terms of their means and covariances. For a Gaussian distribution, the log-probability can be written as:
+   $$ \log p(x|y) = -\frac{1}{2} (x - \mu_y)^T \Sigma_y^{-1} (x - \mu_y) - \frac{1}{2} \log |\Sigma_y| + \text{constant} $$
+
+3. **Simplifying the Difference**:
+   When we take the difference $ ( \log p(y_1|x) - \log p(y_2|x)) $, the constant terms cancel out, leaving us with:
+   $$ f(x) = -\frac{1}{2} (x - \mu_1)^T \Sigma_1^{-1} (x - \mu_1) + \frac{1}{2} (x - \mu_2)^T \Sigma_2^{-1} (x - \mu_2) $$
+
+4. **Quadratic Form**:
+   This expression can be rewritten in a quadratic form:
+   $$ f(x) = x^T W x + w^T x + w_0 $$
+   where:
+   - \( W \) is a matrix that combines the inverse covariances \( \Sigma_1^{-1} \) and \( \Sigma_2^{-1} \),
+        - $ W = \frac{1}{2} (\Sigma_1^{-1} - \Sigma_2^{-1}) $
+   - \( w \) is a vector that combines the means \( \mu_1 \) and \( \mu_2 \),
+        - $ w = \Sigma_1^{-1} \mu_1 - \Sigma_2^{-1} \mu_2 $
+   - \( w_0 \) is a scalar term that includes the log-determinants of the covariances and other constants.
+        - $ w_0 = -\frac{1}{2} \mu_1^T \Sigma_1^{-1} \mu_1 + \frac{1}{2} \mu_2^T \Sigma_2^{-1} \mu_2 - \frac{1}{2} \log \frac{|\Sigma_1|}{|\Sigma_2|} + \log \frac{P(y_1)}{P(y_2)} $
+
+The key idea is that by assuming Gaussian distributions for the class-conditional densities, we can express the discriminant function as a quadratic function of \( x \). This allows for more complex decision boundaries than a linear classifier.
+
+
+#### Class Posterior probability for the Gaussian case:
+Combining:
+
+$ p\^(x|y) = \frac{1}{\sqrt{2\pi^p det(\Sigma_y\^)}} \exp\left(-\frac{1}{2} (\mathbf{x} - \boldsymbol{\mu}_y\^)^\top \Sigma_y\^(\mathbf{x} - \boldsymbol{\mu}_y\^)\right) $
+
+$ p(y|x) = \frac{p\^(x|y)P(y)}{p\^(x)} $
+
+We can derive for class $ y_i $ the $ log(p(y|x)): $
+
+$ log (p\^(y_i|x)) = -\frac{p}{2} \log(2\pi) - \frac{1}{2} \log(det(\Sigma_i)) - \frac{1}{2} (x - \mu_i)^\top \Sigma_i^{-1} (x - \mu_i) + \log(P(y_i)) $
+
+PS: We use log to avoid numerical problems with numbers very close to zero.
+
+#### Estimating the covariance matrix:
+- if one of the variances is zero, the covariance matrix is singular and the inverse does not exist.
+- We can estimate the covariance matrix by the sample covariance matrix:
+    - $ \Sigma_k = \frac{1}{N} \sum_{i=1}^{N} (x_i - \mu) (x_i - \mu)^\top $
+
+for each class k.
+
+- When there is insufficient data, this covariance matrix can not be inverted. 
+
+- Alternatively, we can use a diagonal covariance matrix:
+    $ \Sigma_k = \frac{1}{C} \sum_{i=1}^{C} \Sigma_k $
+
+
+#### No Estimated Covariance Matrix
+- In some cases even a full average of the covariance matrices is not possible.
+- As simplification one could assume that all features have the same variance:
+    - $ \Sigma_k = \sigma^2 I $ where I is the identity matrix
+
+The decision rule is then:
+- $ g_i(x) = -\frac{1}{\sigma^2} (\frac{1}{2} \mu_i^\top \mu_i - \mu_i^\top x) + \log(P(y_i)) $
+
+#### Nearest Mean Classifier
+- Define the discriminant:
+$ f(x) = \log P(y_1|x) - \log P(y_2|x) $ it means that $ f(x) = 0 $ is the decision boundary
+
+We get 
+$ f(x) = w^\top x + w_0 $
+
+where:
+- $ w = \mu_1 - \mu_2 $ 
+- $ w_0 = \frac{1}{2} \mu_1^\top \mu_1 - \frac{1}{2} \mu_2^\top \mu_2 + \log \frac{P(y_1)}{P(y_2)} $
+
+A linear classifier that uses the difference of the class means as the discriminant function is called the nearest mean classifier.
