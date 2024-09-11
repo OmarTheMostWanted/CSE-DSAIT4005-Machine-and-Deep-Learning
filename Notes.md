@@ -290,7 +290,7 @@ for each class k.
 The decision rule is then:
 - $ g_i(x) = -\frac{1}{\sigma^2} (\frac{1}{2} \mu_i^\top \mu_i - \mu_i^\top x) + \log(P(y_i)) $
 
-#### Nearest Mean Classifier
+ SZ
 - Define the discriminant:
 $ f(x) = \log P(y_1|x) - \log P(y_2|x) $ it means that $ f(x) = 0 $ is the decision boundary
 
